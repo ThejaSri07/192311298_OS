@@ -1,0 +1,25 @@
+#include <stdio.h>
+#include <unistd.h>
+
+int main() {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        // Fork failed
+        fprintf(stderr, "Fork Failed");
+        return 1;
+    } else if (pid == 0) {
+        // Child process
+        printf("Hello from the Child process!\n");
+    } else {
+        // Parent process
+        printf("Hello from the Parent process!\n");
+    }
+
+    return 0;
+}
+
+
+output:
+Hello from the Parent process!
+Hello from the Child process!

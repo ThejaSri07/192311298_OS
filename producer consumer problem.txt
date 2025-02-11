@@ -1,0 +1,84 @@
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 5
+int buffer[BUFFER_SIZE];
+int in = 0;
+int out = 0;
+
+sem_t empty;
+sem_t full;
+pthread_mutex_t mutex;
+
+void* producer(void* arg) {
+    int item;
+    for (int i = 0; i < 10; i++) {
+        item = rand() % 100; // Produce a random item
+        sem_wait(&empty);
+        pthread_mutex_lock(&mutex);
+
+        buffer[in] = item;
+        printf("Producer produced %d\n", item);
+        in = (in + 1) % BUFFER_SIZE;
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&full);
+
+        sleep(1); // Sleep to simulate production time
+    }
+}
+
+void* consumer(void* arg) {
+    int item;
+    for (int i = 0; i < 10; i++) {
+        sem_wait(&full);
+        pthread_mutex_lock(&mutex);
+
+        item = buffer[out];
+        printf("Consumer consumed %d\n", item);
+        out = (out + 1) % BUFFER_SIZE;
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&empty);
+
+        sleep(2); // Sleep to simulate consumption time
+    }
+}
+
+int main() {
+    pthread_t prod, cons;
+
+    sem_init(&empty, 0, BUFFER_SIZE);
+    sem_init(&full, 0, 0);
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+} 
+OUTPUT:
+Producer produced 45
+Consumer consumed 45
+Producer produced 18
+Producer produced 77
+Consumer consumed 18
+Producer produced 33
+Consumer consumed 77
+Producer produced 65
+Consumer consumed 33
+Producer produced 89
+Consumer consumed 65
+Producer produced 50
+Consumer consumed 89
+Consumer consumed 50

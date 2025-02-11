@@ -1,0 +1,83 @@
+#include <stdio.h>
+
+#define MAX_PROCESSES 100
+
+struct Process {
+    int id;
+    int burstTime;
+    int remainingTime;
+    int waitingTime;
+    int turnaroundTime;
+};
+
+void roundRobinScheduling(struct Process processes[], int n, int quantum) {
+    int time = 0;
+    int finishedProcesses = 0;
+
+    while (finishedProcesses < n) {
+        for (int i = 0; i < n; i++) {
+            if (processes[i].remainingTime > 0) {
+                if (processes[i].remainingTime > quantum) {
+                    time += quantum;
+                    processes[i].remainingTime -= quantum;
+                } else {
+                    time += processes[i].remainingTime;
+                    processes[i].remainingTime = 0;
+                    finishedProcesses++;
+                    processes[i].turnaroundTime = time;
+                    processes[i].waitingTime = processes[i].turnaroundTime - processes[i].burstTime;
+                }
+            }
+        }
+    }
+}
+
+void calculateAverageTimes(struct Process processes[], int n) {
+    int totalWaitingTime = 0, totalTurnaroundTime = 0;
+    
+    for (int i = 0; i < n; i++) {
+        totalWaitingTime += processes[i].waitingTime;
+        totalTurnaroundTime += processes[i].turnaroundTime;
+    }
+
+    float averageWaitingTime = (float) totalWaitingTime / n;
+    float averageTurnaroundTime = (float) totalTurnaroundTime / n;
+
+    printf("Average waiting time = %.2f\n", averageWaitingTime);
+    printf("Average turnaround time = %.2f\n", averageTurnaroundTime);
+}
+
+int main() {
+    int n, quantum;
+    struct Process processes[MAX_PROCESSES];
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    printf("Enter the quantum time: ");
+    scanf("%d", &quantum);
+
+    for (int i = 0; i < n; i++) {
+        printf("Enter burst time for process %d: ", i + 1);
+        scanf("%d", &processes[i].burstTime);
+        processes[i].id = i + 1;
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].waitingTime = 0;
+        processes[i].turnaroundTime = 0;
+    }
+
+    roundRobinScheduling(processes, n, quantum);
+    calculateAverageTimes(processes, n);
+
+    return 0;
+}
+
+Input:
+Enter the number of processes: 3
+Enter the quantum time: 4
+Enter the burst time for process 1: 10
+Enter the burst time for process 2: 5
+Enter the burst time for process 3: 8
+
+Output:
+Average Waiting time: 12.67
+Average Turn around time: 20.33

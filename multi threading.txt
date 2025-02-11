@@ -1,0 +1,61 @@
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define NUM_THREADS 2
+
+pthread_mutex_t lock;
+
+void *read_input(void *arg) {
+    char buffer[256];
+    while (1) {
+        pthread_mutex_lock(&lock); // Lock the mutex
+        printf("Enter some text: ");
+        fgets(buffer, sizeof(buffer), stdin);
+        printf("You entered: %s\n", buffer);
+        pthread_mutex_unlock(&lock); // Unlock the mutex
+        sleep(1); // Sleep for a bit before next input
+    }
+    return NULL;
+}
+
+void *print_output(void *arg) {
+    while (1) {
+        pthread_mutex_lock(&lock); // Lock the mutex
+        printf("Output thread is running...\n");
+        pthread_mutex_unlock(&lock); // Unlock the mutex
+        sleep(2); // sleep for 2 seconds
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t threads[NUM_THREADS];
+    pthread_mutex_init(&lock, NULL);
+
+    if (pthread_create(&threads[0], NULL, read_input, NULL)) {
+        fprintf(stderr, "Error creating input thread\n");
+        return 1;
+    }
+
+    if (pthread_create(&threads[1], NULL, print_output, NULL)) {
+        fprintf(stderr, "Error creating output thread\n");
+        return 1;
+    }
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    pthread_mutex_destroy(&lock);
+    return 0;
+}
+Output
+Output thread is running...
+Output thread is running...
+
+Enter some text: Hello, Copilot!
+You entered: Hello, Copilot!
+Output thread is running...
+Output thread is running...

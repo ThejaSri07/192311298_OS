@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    FILE *file;
+    char filename[] = "sequential_file.txt";
+    char data_to_write[] = "This is an example of sequential file allocation.";
+    char buffer[100];
+
+    // Open file for writing
+    file = fopen(filename, "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return 1;
+    }
+
+    // Write data to file
+    fprintf(file, "%s", data_to_write);
+    fclose(file);
+
+    // Open file for reading
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file for reading.\n");
+        return 1;
+    }
+
+    // Read data from file
+    fgets(buffer, 100, file);
+    printf("Data read from file: %s\n", buffer);
+    fclose(file);
+
+    return 0;
+}
+
+Input
+"This is an example of sequential file allocation."
+
+Output
+Data read from file: This is an example of sequential file allocation.
